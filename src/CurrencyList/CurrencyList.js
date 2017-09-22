@@ -13,7 +13,14 @@ class CurrencyList extends Component {
 
     load = () => {
         let request = 'http://api.fixer.io/latest';
-        let inputBase = document.getElementById("inputBase").value;
+        const inputBase = document.getElementById("inputBase").value;
+
+        const comboBox = document.getElementById("currencyComboBox");
+        if (comboBox) {
+            let text = comboBox.options[comboBox.selectedIndex].text;
+            comboBox.value = text;
+            request += '?base=' + text;
+        }
 
         if (inputBase) {
             request += '?base=' + inputBase;
@@ -39,14 +46,14 @@ class CurrencyList extends Component {
     render() {
         const {data} = this.state;
         let list;
+        let comboBox;
         if (data.rates) {
             const rateKeys = Object.keys(data.rates);
-            const ratesArray = rateKeys.map(key => key + '=' + data.rates[key]);
+            const ratesArray = rateKeys.map(key => <li key={key}>{key} = {data.rates[key]}</li>);
+            list = <ul>{ratesArray}</ul>;
 
-            console.log(ratesArray);
-
-            list = ratesArray.map(value => <li key={value}>{value}</li>);
-            list = <ul>{list}</ul>
+            comboBox = rateKeys.map(key => <option key={key} value={key}>{key}</option>);
+            comboBox = <select id="currencyComboBox">{comboBox}</select>
         }
         return (
             <div>
@@ -55,12 +62,15 @@ class CurrencyList extends Component {
                 <button type="button" onClick={this.load}>Load</button>
                 <br/><br/>
                 <input type="text" id="inputBase"/>
+
+                {comboBox}
+
                 <button type="button" onClick={this.load}>Select</button>
 
 
                 <p>{data.base}</p>
 
-                {data === "error" ? <h1>Bad response from api server</h1>: list}
+                {data === "error" ? <h1>Bad response from api server</h1> : list}
 
             </div>
 
