@@ -1,4 +1,6 @@
 import React, {Component} from 'react'
+import './CurrencyList.css';
+
 
 function checkStatus(response) {
     if (response.status >= 200 && response.status < 300) {
@@ -22,8 +24,13 @@ class CurrencyList extends Component {
 
     clear = () => {
         this.setState({
-            data: {}
+            data: {},
+            baseCurrency: 'CHF',
+            isFetching: true,
+            hasError: false,
+            isFetched: false
         });
+        this.load(this.state.baseCurrency);
     };
 
     load = (currency) => {
@@ -40,7 +47,12 @@ class CurrencyList extends Component {
                     this.setState({data: data, isFetching: false, isFetched: true})
                 }
                 else {
-                    this.setState({data: data, baseCurrencies: Object.keys(data.rates), isFetching: false, isFetched: true})
+                    this.setState({
+                        data: data,
+                        baseCurrencies: Object.keys(data.rates),
+                        isFetching: false,
+                        isFetched: true
+                    })
                 }
             }).catch(error => {
                 console.log(error);
@@ -62,8 +74,20 @@ class CurrencyList extends Component {
         const {isFetching, isFetched, hasError, baseCurrency, data, baseCurrencies} = this.state;
         const canShowData = isFetched && !hasError;
 
+        let containsEurBaseCurrency;
+        for (let i = 0; i < baseCurrencies.length; i++) {
+            if(baseCurrencies[i] === 'EUR') {
+                containsEurBaseCurrency = true;
+            }
+        }
+
+        if(!containsEurBaseCurrency) {
+            baseCurrencies[baseCurrencies.length] = 'EUR';
+        }
+
+
         let ratesArray;
-        if(canShowData) {
+        if (canShowData) {
             let rateKeys = Object.keys(data.rates);
             ratesArray = rateKeys.map(key => <li key={key}>{key} = {data.rates[key]}</li>);
         }
@@ -76,6 +100,9 @@ class CurrencyList extends Component {
                 <select value={baseCurrency} onChange={this.handleOnChange}>
                     {baseCurrencies.length > 0 && baseCurrencies.map(key => <option key={key} value={key}>{key}</option>)}
                 </select>
+
+                <button type="button" onClick={this.clear}>Clear</button>
+
 
                 <ul>{ratesArray}</ul>
 
